@@ -477,7 +477,7 @@ class Client(object):
       consumer(data)
 
   def upload(self, hdfs_path, local_path, n_threads=1, temp_dir=None,
-    chunk_size=2 ** 16, progress=None, cleanup=True, **kwargs):
+    chunk_size=2 ** 16, progress=None, cleanup=True, use_existing=False, **kwargs):
     """Upload a file or directory to HDFS.
 
     :param hdfs_path: Target HDFS path. If it already exists and is a
@@ -497,6 +497,10 @@ class Client(object):
       completion, it will be called once with `-1` as second argument.
     :param cleanup: Delete any uploaded files if an error occurs during the
       upload.
+    :param use_existing: If `hdfs_path` exists and the `local_path` is a directory
+      when `use_existing=True` add files to existing `hdfs_path`. 
+      when `use_existing=False` add files to `hdfs_path` under a new directory
+      named after `local_path`. 
     :param \*\*kwargs: Keyword arguments forwarded to :meth:`write`. In
       particular, set `overwrite` to overwrite any existing file or directory.
 
@@ -550,7 +554,8 @@ class Client(object):
       # Remote path is a directory.
       suffixes = set(status['pathSuffix'] for status in statuses)
       local_name = osp.basename(local_path)
-      hdfs_path = psp.join(hdfs_path, local_name)
+      if not use_existing:
+        hdfs_path = psp.join(hdfs_path, local_name)
       if local_name in suffixes:
         if not kwargs.get('overwrite'):
           raise HdfsError('Remote path %r already exists.', hdfs_path)
