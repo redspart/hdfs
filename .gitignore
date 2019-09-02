@@ -1,0 +1,4 @@
+.eggs/
+hdfs.egg-info/
+__pycache__/
+.coverage
