@@ -318,6 +318,23 @@ class TestUpload(_IntegrationTest):
     finally:
       rmtree(dpath)
 
+  def test_upload_with_use_existing(self):
+    dpath = mkdtemp()
+    try:
+      npath = osp.join(dpath, 'hi')
+      os.mkdir(npath)
+      with open(osp.join(npath, 'foo'), 'w') as writer:
+        writer.write('hello!')
+      self.client._mkdirs('up')
+      self.client.upload('up', npath, use_existing=True)
+      with open(osp.join(npath, 'baz'), 'w') as writer:
+        writer.write('world!')
+      self.client.upload('up', npath, use_existing=True)
+      eq_(self._read('up/hi/foo'), b'hello!')
+      eq_(self._read('up/hi/baz'), b'world!')
+    finally:
+      rmtree(dpath)
+
   def test_upload_directory_to_missing(self):
     dpath = mkdtemp()
     try:
